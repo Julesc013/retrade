@@ -38,13 +38,18 @@ if trade_type == "trailing sell" or trade_type == "":
 
 
         iteration += 1
-        print("Pass: " + iteration) # Display the number of the current pass
-
+        
 
         # Get live price of stock
         live_price = stock_info.get_live_price(ticker)
 
-        print(live_price)
+
+        header = "[" + str(iteration) + "] " + ticker.upper() + ": $" # Format header for when price gets displayed
+        print(header + str(live_price)) # Display live price
 
 
         sleep(interval) # Wait the specififed time before getting the price again
+
+
+
+print("Specified duration ended. You can safely quit this program.") # Show that everything closed safely (and that you didn't just crash).
