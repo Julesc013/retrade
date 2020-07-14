@@ -10,23 +10,40 @@ print("Retrade v" + VERSION + ", (C) Jules Carboni 2020.") # Print copyright and
 # Import dependencies
 from datetime import datetime
 from datetime import timedelta
-from pytz import timezone
-from time import sleep
+from pytz import timezone # For converting times to/from EST
+from time import sleep # To sleep the program
+from colorama import Fore, Back, Style # For coloured text in the terminal
+from yahoo_fin import stock_info # Import stock_info module from yahoo_fin, this is what gets the latest price!
 
-from yahoo_fin import stock_info # Import stock_info module from yahoo_fin
 
 
+def print_info(ticker, live_price, live_time, iteration, current_stop, submitted_stop, last_price):
+    
+    # Format and print live price and other information to console. E.g. TSLA: $1750.3487905234
 
-def print_info(ticker, live_price, live_time, iteration, current_stop, submitted_stop):
-    # Format and print live price and other information to console.
 
     time_stamp = "[" + live_time.strftime(DATE_TIME_FORMAT) + "]" # Time stamp displaying date and time of price retrieval
-    ticker_stamp = ticker.upper() + ": $" # e.g. TSLA: $1750.3487905234
     
     stop_prices = "(CS: " + str(round(current_stop, 2)) + ", SS: " + str(round(submitted_stop, 2)) + ")" # The prices of the stops, rounded to the nearest cent
     #iteration_number = "[" str(iteration) "]" # TEMP
     
-    print(time_stamp + " " + ticker_stamp + str(live_price) + " " + stop_prices) # Display live price
+    
+    # Determine colours to use when printing info
+
+    if live_price > last_price:
+        price_color = Back.GREEN
+    elif live_price < last_price:
+        price_color = Back.RED
+    else:
+        price_color = Back.LIGHTBLACK_EX
+
+    if current_stop != submitted_stop:
+        stop_color = Fore.YELLOW
+    else:
+        stop_color = "" # Don't change the colour
+
+
+    print(time_stamp + " " + ticker.upper() + ": " + price_color + "$" + str(live_price) + Back.RESET + " " + stop_color + stop_prices + Fore.RESET) # Display live price
 
 
 
@@ -70,6 +87,7 @@ if trade_type == "trailing sell" or trade_type == "": # If trade type not specif
     update_zone = update_zone_prop * trail_size
     update_stop = current_stop + update_zone
 
+    last_price = 0.00 # The price of the last retrieval. Starts as an empty value
 
     iteration = 0 # Counter for number of passes
 
@@ -101,8 +119,9 @@ if trade_type == "trailing sell" or trade_type == "": # If trade type not specif
             submitted_stop = current_stop
 
         
-        print(str(live_price)) # Display live price and information TEMP
+        print_info(ticker, live_price, live_time, iteration, current_stop, submitted_stop, last_price) # Display live price and information TEMP
 
+        last_price = live_price # Make the current price the new last price
 
         sleep(interval) # Wait the specififed time before getting the price again
 
