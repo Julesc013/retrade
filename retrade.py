@@ -21,7 +21,7 @@ ticker = input("Ticker to monitor: ").lower() # The stock to monitor
 interval = float(input("Time between price checks (seconds): ")) # Number of seconds between each request
 duration = int(60 * float(input("Time until the computer stops monitoring (minutes): "))) # Duration of computer service (multiplied to convert to seconds)
 trade_type = input("Trade type (leave blank for 'trailing sell'): ") # Type of trade to execute
-
+volume = int(input("Stocks to trade (INTEGERS ONLY): ")) # Number of stocks to buy/sell
 
 # Calculate the finishing time for the service
 finish_time = datetime.now() + timedelta(seconds=duration)
@@ -29,7 +29,10 @@ finish_time = datetime.now() + timedelta(seconds=duration)
 
 # Branch out into different trade methods
 
-if trade_type == "trailing sell" or trade_type == "":
+if trade_type == "trailing sell" or trade_type == "": # If trade type not specified, assume trailing sell
+
+    # Get trade type specific information
+    trail_size = float(input("Trail value (dollars below highest market value to sell at): ")) # Get the size/value of the trail
 
     iteration = 0 # Counter for number of passes
 
