@@ -1,0 +1,15 @@
+# Ignore logs, keys and Python caches.
+*.log
+*.key
+*.pyc
+
+# Visual Studio Code.
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+*.code-workspace
+
+# Ignore archived files.
+Backups/
