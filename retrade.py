@@ -1,9 +1,9 @@
 
-# Retrade: Monitors the stock market and places trades automatically.
+# Retrade: Monitors the stock market and places trades automatically. Specifically US stocks through CommSec.
 # Copyright: Jules Carboni, 2020.
 
 
-VERSION = "0.3.0"
+VERSION = "0.3.0" # Program version, change this whenever you want
 
 
 
@@ -36,7 +36,9 @@ MARKET_CLOSE_TIME = datetime(1, 1, 1, 16, 15, tzinfo=TIMEZONE).time()
 
 STOP_WARNING_PROP = 5.0 / 100 # Percentage. If the SS is not within this range of the CS, it will be highlighted as a warning
 
-
+# Web variables (for CommSec International)
+MASTER_LOGIN_URL = "https://www2.commsec.com.au/Public/HomePage/Login.aspx"
+INTERNATIONAL_LOGIN_URL = "https://www2.commsec.com.au/Private/SingleSignOn/Pershing.aspx?sso=true"
 
 
 
