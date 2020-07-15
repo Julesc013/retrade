@@ -3,8 +3,8 @@
 # Copyright: Jules Carboni, 2020.
 
 
-VERSION = "0.2.0"
-print("Retrade v" + VERSION + ", (C) Jules Carboni 2020.") # Print copyright and version information at start
+VERSION = "0.3.0"
+print("\n" + "Retrade v" + VERSION + ", (C) Jules Carboni 2020." + "\n") # Print copyright and version information at start
 
 
 # Import dependencies
@@ -52,7 +52,7 @@ def print_info(ticker, live_price, live_time, iteration, current_stop, submitted
         current_stop_color = "" # Don't change the colour
     
     if abs((submitted_stop - current_stop) / float(submitted_stop)) >= STOP_WARNING_PROP: # If the submitted stop is not within 10% of the current stop, make it display red (could also go red if greater than the current stop (sell trades only))
-        submitted_stop_color = Fore.RED
+        submitted_stop_color = Fore.LIGHTRED_EX
     else:
         submitted_stop_color = "" # Don't change the colour
 
@@ -109,9 +109,18 @@ if trade_type == "trailing sell" or trade_type == "": # If trade type not specif
 
         iteration += 1
         
-        # Get live price of stock
-        live_price = stock_info.get_live_price(ticker)
-        live_time = datetime.now(TIMEZONE) # The time at which the price was retrieved (or close enough to) # TEMP (use proper datatable function that contains real time)
+        try: # Attempt a web request
+
+            # Get live price of stock
+            live_price = stock_info.get_live_price(ticker)
+            live_time = datetime.now(TIMEZONE) # The time at which the price was retrieved (or close enough to) # TEMP (use proper datatable function that contains real time)
+
+        except Exception as ex:
+
+            # If failed to get new live price, skip this iteration and go to the next iteration
+
+            print(Fore.LIGHTRED_EX + "Exception: " + str(ex) + Fore.RESET) # Print the exception message to the console
+            continue # Next iteration
 
 
         calculated_stop = live_price - trail_size # The stop price assuming current price is highest price
