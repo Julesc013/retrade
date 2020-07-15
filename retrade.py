@@ -122,15 +122,15 @@ def log_in():
 
 
 
-def get_trade_info(get_info):
+def get_trade_info(element_id):
 
     # Get information from the trade page.
 
-    if get_info == "stop price":
+    web_driver.get(trade_url) # Load the page
 
-        web_driver.get(trade_url) # Load the page
-
-        #TEMP EXTRACT THE INFO and RETURN STOP PRICE!!
+    return True
+    
+    #TEMP EXTRACT THE INFO and RETURN STOP PRICE!!
 
 
 
@@ -154,7 +154,7 @@ account_password = getpass(Style.NORMAL + "CommSec User password: " + Style.BRIG
 trade_type = "trailing sell" #TEMP: input(Style.NORMAL + "Trade type " + Style.DIM + "(leave blank for 'trailing sell')" + Style.NORMAL + ": " + Style.BRIGHT) # Type of trade to execute
 #volume = int(input(Style.NORMAL + "Stocks to trade " + Style.DIM + "(INTEGERS ONLY)" + Style.NORMAL + ": " + Style.BRIGHT)) # Number of stocks to buy/sell
 
-Style.RESET_ALL # Reset style after round of inputs
+print(Style.RESET_ALL) # Reset style after round of inputs
 
 
 
@@ -185,7 +185,7 @@ if trade_type == "trailing sell" or trade_type == "": # If trade type not specif
     #current_stop = float(input("Current stop price: "))
     trade_url = input(Style.NORMAL + "URL of trade page " + Style.DIM + "(MUST ALREADY HAVE STOP LOSS SET UP)" + Style.NORMAL + ": " + Style.BRIGHT) # The URL to the stop-loss that has already been set up.
 
-    Style.RESET_ALL # Reset style after round of inputs
+    print(Style.RESET_ALL) # Reset style after round of inputs
 
 
     # Get current/submitted stop price from trade page
@@ -193,21 +193,21 @@ if trade_type == "trailing sell" or trade_type == "": # If trade type not specif
     try:
             
         # Extract the stop price
-        submitted_stop = get_trade_info("stop price")
+        submitted_stop = float(get_trade_info("TEMP stop price ID"))
 
     except NoSuchElementException:
 
         # If this error occurs, probably not logged in, so call the log in function.
 
-        print(Fore.YELLOW + "Now logging into CommSec account." + Fore.RESET) # Print the exception message to the console
+        print(Fore.YELLOW + Style.BRIGHT + "Logging into CommSec account now." + Style.RESET_ALL) # Print the exception message to the console
         
         log_in() # Log in, duh
         
-        submitted_stop = get_trade_info("stop price") # Try getting the stop price again
+        submitted_stop = float(get_trade_info("TEMP stop price ID")) # Try getting the stop price again
 
     except InvalidArgumentException:
 
-        print(Fore.LIGHTRED_EX + "Error: The given trade URL does not exist." + Fore.RESET) # Print the exception message to the console
+        print(Fore.LIGHTRED_EX + Style.BRIGHT + "Error: The given trade URL does not exist." + Style.RESET_ALL) # Print the exception message to the console
         
 
     # Start the current stop at the actual real submitted stop
@@ -227,8 +227,12 @@ if trade_type == "trailing sell" or trade_type == "": # If trade type not specif
     while datetime.now(TIMEZONE) < finish_datetime or duration == 0:
 
         
+        # THIS CHECK SHOULD BE A FUNCITON!! (TEMP)
+
         # Check if the markets are open at the current time, if not, sleep and try again later
         if not 0 <= datetime.now(TIMEZONE).weekday() <= 4: # If its the weekend
+
+            print(Fore.LIGHTBLACK_EX + Style.BRIGHT + "Waiting for markets to open. Will check again in 1 hour." + Style.RESET_ALL)
 
             # Sleep for an hour then try again
             sleep(3600)
@@ -237,6 +241,8 @@ if trade_type == "trailing sell" or trade_type == "": # If trade type not specif
         else: # If its a weekday
 
             if not MARKET_OPEN_TIME <= datetime.now(TIMEZONE).time() <= MARKET_CLOSE_TIME: # If markets are currently closed
+
+                print(Fore.LIGHTBLACK_EX + Style.BRIGHT + "Waiting for markets to open. Will check again in 10 minutes." + Style.RESET_ALL)
 
                 # Sleep for 10 minutes then try again
                 sleep(600)
