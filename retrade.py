@@ -3,7 +3,7 @@
 # Copyright: Jules Carboni, 2020.
 
 
-VERSION = "0.1.0"
+VERSION = "0.2.0"
 print("Retrade v" + VERSION + ", (C) Jules Carboni 2020.") # Print copyright and version information at start
 
 
@@ -13,37 +13,8 @@ from datetime import timedelta
 from pytz import timezone # For converting times to/from EST
 from time import sleep # To sleep the program
 from colorama import Fore, Back, Style # For coloured text in the terminal
-from yahoo_fin import stock_info # Import stock_info module from yahoo_fin, this is what gets the latest price!
+from yahoo_fin import stock_info # Import stock_info module from yahoo_fin, this is what gets the latest price
 
-
-
-def print_info(ticker, live_price, live_time, iteration, current_stop, submitted_stop, last_price):
-    
-    # Format and print live price and other information to console. E.g. TSLA: $1750.3487905234
-
-
-    time_stamp = "[" + live_time.strftime(DATE_TIME_FORMAT) + "]" # Time stamp displaying date and time of price retrieval
-    
-    stop_prices = "(CS: " + str(round(current_stop, 2)) + ", SS: " + str(round(submitted_stop, 2)) + ")" # The prices of the stops, rounded to the nearest cent
-    #iteration_number = "[" str(iteration) "]" # TEMP
-    
-    
-    # Determine colours to use when printing info
-
-    if live_price > last_price:
-        price_color = Back.GREEN
-    elif live_price < last_price:
-        price_color = Back.RED
-    else:
-        price_color = Back.LIGHTBLACK_EX
-
-    if current_stop != submitted_stop:
-        stop_color = Fore.YELLOW
-    else:
-        stop_color = "" # Don't change the colour
-
-
-    print(time_stamp + " " + ticker.upper() + ": " + price_color + "$" + str(live_price) + Back.RESET + " " + stop_color + stop_prices + Fore.RESET) # Display live price
 
 
 
@@ -54,6 +25,47 @@ DATE_TIME_FORMAT = "%Y-%m-%d %H:%M:%S %Z%z"
 
 MARKET_OPEN_TIME = 00000 # TEMP
 MARKET_CLOSE_TIME = 00000 # TEMP
+
+STOP_WARNING_PROP = 5.0 / 100 # Percentage. If the SS is not within this range of the CS, it will be highlighted as a warning
+
+
+
+
+
+def print_info(ticker, live_price, live_time, iteration, current_stop, submitted_stop, last_price):
+    
+    # Format and print live price and other information to console. E.g. TSLA: $1750.3487905234
+
+
+    # Determine colours to use when printing info
+
+    if live_price > last_price: # If the price went up make it green
+        price_color = Back.GREEN #Fore.BLACK + Back.LIGHTGREEN_EX
+    elif live_price < last_price: # If the price went down make it red
+        price_color = Back.RED #Fore.BLACK + Back.LIGHTRED_EX
+    else:
+        price_color = Back.BLACK #Fore.BLACK + Back.LIGHTBLACK_EX
+
+    if current_stop != submitted_stop: # If the current stop has changed and the submitted stop hasn't been updated, make it display orange/yellow
+        current_stop_color = Fore.YELLOW
+    else:
+        current_stop_color = "" # Don't change the colour
+    
+    if abs((submitted_stop - current_stop) / float(submitted_stop)) >= STOP_WARNING_PROP: # If the submitted stop is not within 10% of the current stop, make it display red (could also go red if greater than the current stop (sell trades only))
+        submitted_stop_color = Fore.RED
+    else:
+        submitted_stop_color = "" # Don't change the colour
+
+
+    time_stamp = "[" + live_time.strftime(DATE_TIME_FORMAT) + "]" # Time stamp displaying date and time of price retrieval
+    
+    stop_prices = "(" + current_stop_color + "CS: " + format(current_stop, '.2f') + Fore.RESET + ", " + submitted_stop_color + "SS: " + format(submitted_stop, '.2f') + Fore.RESET + ")" # The prices of the stops, rounded to the nearest cent
+    #iteration_number = "[" str(iteration) "]" # TEMP
+    
+    
+
+    print(Style.DIM + time_stamp + Style.RESET_ALL + " " + ticker.upper() + ": " + price_color + "$" + format(live_price, '.4f') + Back.RESET + " " + stop_prices) # Display live price
+
 
 
 
@@ -126,5 +138,9 @@ if trade_type == "trailing sell" or trade_type == "": # If trade type not specif
         sleep(interval) # Wait the specififed time before getting the price again
 
 
+else:
 
-print("Specified duration ended. You can safely quit this program.") # Show that everything closed safely (and that you didn't just crash).
+    print(Fore.RED + "Trade type does not exist. Program quit itself." + Fore.RESET)
+
+
+print(Fore.GREEN + "Specified duration ended. You can safely quit this program." + Fore.RESET) # Show that everything closed safely (and that you didn't just crash).
