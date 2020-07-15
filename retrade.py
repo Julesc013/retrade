@@ -3,19 +3,27 @@
 # Copyright: Jules Carboni, 2020.
 
 
-VERSION = "0.3.0" # Program version, change this whenever you want
+VERSION = "0.9.0" # Program version, change this whenever you want
 
 
 
 # Import dependencies
+
 from datetime import datetime
 from datetime import timedelta
 import time # To compare times of day (open and close hours)
 from pytz import timezone # For converting times to/from EST
+
 from time import sleep # To sleep the program
 from colorama import Fore, Back, Style # For coloured text in the terminal
-from yahoo_fin import stock_info # Import stock_info module from yahoo_fin, this is what gets the latest price
+from getpass import getpass # Hides the typed text when entering passwords
 
+from yahoo_fin import stock_info # Import stock_info module from yahoo_fin, this is what gets the latest price
+from selenium import webdriver
+from selenium.webdriver.common.keys import Keys # Allows data entry into web elements
+from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
+from selenium.common.exceptions import NoSuchElementException, InvalidArgumentException # For Selenium error handling
+import requests.exceptions # For Requests error handling
 
 
 # Print copyright and version information at start
@@ -40,6 +48,9 @@ STOP_WARNING_PROP = 5.0 / 100 # Percentage. If the SS is not within this range o
 MASTER_LOGIN_URL = "https://www2.commsec.com.au/Public/HomePage/Login.aspx"
 INTERNATIONAL_LOGIN_URL = "https://www2.commsec.com.au/Private/SingleSignOn/Pershing.aspx?sso=true"
 
+# Web driver variables
+BROWSER_CAPABILITIES = DesiredCapabilities.FIREFOX.copy()
+BROWSER_CAPABILITIES['accept_untrusted_certs'] = True
 
 
 def print_info(ticker, live_price, live_time, iteration, current_stop, submitted_stop, last_price):
@@ -79,24 +90,74 @@ def print_info(ticker, live_price, live_time, iteration, current_stop, submitted
 
 
 
+def log_in():
+
+    # Access the broker's website and validate the session by logging in
+    # Sources: https://stackoverflow.com/questions/21186327/fill-username-and-password-using-selenium-in-python, https://medium.com/edureka/selenium-using-python-edc22a44f819
+
+
+    # Get the master login page and attempt to log in
+
+    try:
+    
+        # Locate the elements
+        username_element = web_driver.find_element_by_id("ctl00_cpContent_txtLogin")
+        password_element = web_driver.find_element_by_id("ctl00_cpContent_txtPassword")
+
+        # Populate the elements
+        username_element.send_keys(account_username)
+        password_element.send_keys(account_password)
+
+        web_driver.find_element_by_name("ctl00_cpContent_btnLogin").click() # Click the login button
+
+    except NoSuchElementException:
+
+        print("GOTCHA")
+
+
+
+
+
+# --- GET DATA ---
+
+
 # Get data from user
+
 
 ticker = input(Style.NORMAL + "Ticker to monitor: " + Style.BRIGHT).lower() # The stock to monitor
 
 interval = float(input(Style.NORMAL + "Time between price checks " + Style.DIM + "(seconds)" + Style.NORMAL + ": " + Style.BRIGHT)) # Number of seconds between each request
 duration = int(60 * float(input(Style.NORMAL + "Time until the computer stops monitoring " + Style.DIM + "(minutes)" + Style.NORMAL + ": " + Style.BRIGHT))) # Duration of computer service (multiplied to convert to seconds)
 
+# TEMP: Here is where to ask for which broker! Use this given variable when making decisions about e.g. the log-in process
+account_username = input(Style.NORMAL + "CommSec User ID: " + Style.BRIGHT).lower() # The user's CommSec account ID
+account_password = getpass(Style.NORMAL + "CommSec User password: " + Style.BRIGHT).lower() # The user's password, required to place trades
+
 trade_type = "trailing sell" #TEMP: input(Style.NORMAL + "Trade type " + Style.DIM + "(leave blank for 'trailing sell')" + Style.NORMAL + ": " + Style.BRIGHT) # Type of trade to execute
-volume = 1 #TEMP: int(input(Style.NORMAL + "Stocks to trade " + Style.DIM + "(INTEGERS ONLY)" + Style.NORMAL + ": " + Style.BRIGHT)) # Number of stocks to buy/sell
+#volume = int(input(Style.NORMAL + "Stocks to trade " + Style.DIM + "(INTEGERS ONLY)" + Style.NORMAL + ": " + Style.BRIGHT)) # Number of stocks to buy/sell
 
 Style.RESET_ALL # Reset style after round of inputs
+
+
+
 
 
 # Calculate the finishing time for the service
 finish_datetime = datetime.now(TIMEZONE) + timedelta(seconds=duration)
 
 
+
+# Initialise the selenium webdriver
+web_driver = webdriver.Firefox(capabilities=BROWSER_CAPABILITIES)
+
+
+
+
+# --- BEGIN PROCESSING ---
+
+
 # Branch out into different trade methods
+
 
 if trade_type == "trailing sell" or trade_type == "": # If trade type not specified, assume trailing sell
 
@@ -109,9 +170,27 @@ if trade_type == "trailing sell" or trade_type == "": # If trade type not specif
     Style.RESET_ALL # Reset style after round of inputs
 
 
-    # Get current/submitted stop price
+    # Get current/submitted stop price from trade page
+
+    try:
+            
+        web_driver.get(trade_url) # Load the page
+
+        # Extract the stop price
+
+    except InvalidArgumentException:
+
+        print(Fore.LIGHTRED_EX + "Error: The given trade URL does not exist." + Fore.RESET) # Print the exception message to the console
+        
+    except ConnectionError:
+
+        print(Fore.YELLOW + "Now logging into CommSec account." + Fore.RESET) # Print the exception message to the console
+        
+        #TEMP DO GETTING STUFF
+
     submitted_stop = 000000 # TEMP
     current_stop = submitted_stop
+
 
     # Calculate price at which to update the stop
     update_zone = update_zone_prop * trail_size
@@ -152,11 +231,11 @@ if trade_type == "trailing sell" or trade_type == "": # If trade type not specif
             live_price = stock_info.get_live_price(ticker)
             live_time = datetime.now(TIMEZONE) # The time at which the price was retrieved (or close enough to) # TEMP (use proper datatable function that contains real time)
 
-        except Exception as ex:
+        except ConnectionError:
 
             # If failed to get new live price, skip this iteration and go to the next iteration
 
-            print(Fore.LIGHTRED_EX + "Exception: " + str(ex) + Fore.RESET) # Print the exception message to the console
+            print(Fore.LIGHTRED_EX + "Error: Could not get live price. Connection error." + Fore.RESET) # Print the exception message to the console
             continue # Next iteration
 
 
@@ -188,5 +267,9 @@ else:
 
     print(Fore.RED + "Trade type does not exist. Program quit itself." + Fore.RESET)
 
+
+
+# Safely quit the Selenium web driver
+web_driver.quit
 
 print(Fore.GREEN + "Specified duration ended. You can safely quit this program." + Fore.RESET) # Show that everything closed safely (and that you didn't just crash).
