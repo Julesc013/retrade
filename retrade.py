@@ -24,8 +24,8 @@ from yahoo_fin import stock_info # Import stock_info module from yahoo_fin, this
 TIMEZONE = timezone('US/Eastern')
 DATE_TIME_FORMAT = "%Y-%m-%d %H:%M:%S %Z%z"
 
-MARKET_OPEN_TIME = datetime.time(9, 30, tzinfo=TIMEZONE)
-MARKET_CLOSE_TIME = datetime.time(16, 00, tzinfo=TIMEZONE)
+MARKET_OPEN_TIME = datetime(1, 1, 1, 9, 15, tzinfo=TIMEZONE).time()
+MARKET_CLOSE_TIME = datetime(1, 1, 1, 16, 15, tzinfo=TIMEZONE).time()
 
 STOP_WARNING_PROP = 5.0 / 100 # Percentage. If the SS is not within this range of the CS, it will be highlighted as a warning
 
@@ -105,10 +105,26 @@ if trade_type == "trailing sell" or trade_type == "": # If trade type not specif
     iteration = 0 # Counter for number of passes
 
 
-    now = datetime.now(TIMEZONE) # Literally just the current time, a disposable value
+    # Loop until the duration is reached (or forever if no duration specified)
+    while datetime.now(TIMEZONE) < finish_datetime or duration == 0:
 
-    # While the markets are open (daytime in a weekday), loop until the duration is reached (or forever if no duration specified)
-    while (now < finish_datetime and (0 <= now.weekday() <= 4 and MARKET_OPEN_TIME <= now.time() <= MARKET_CLOSE_TIME)) or duration == 0:
+        
+        # Check if the markets are open at the current time, if not, sleep and try again later
+        if not 0 <= datetime.now(TIMEZONE).weekday() <= 4: # If its the weekend
+
+            # Sleep for an hour then try again
+            sleep(3600)
+            continue # Go back and check current time again
+
+        else: # If its a weekday
+
+            if not MARKET_OPEN_TIME <= datetime.now(TIMEZONE).time() <= MARKET_CLOSE_TIME: # If markets are currently closed
+
+                # Sleep for 10 minutes then try again
+                sleep(600)
+                continue # Go back and check current time again
+
+            # If the markets are open, proceed with execution
 
 
         iteration += 1
