@@ -128,7 +128,7 @@ def get_trade_info(element_id):
 
     web_driver.get(trade_url) # Load the page
 
-    return True
+    return input(Style.NORMAL + "Currently set stop price " + Style.DIM + "(dollars)" + Style.NORMAL + ": " + Style.BRIGHT) # TEMP, until I get retrieval code working this will do
     
     #TEMP EXTRACT THE INFO and RETURN STOP PRICE!!
 
@@ -148,8 +148,8 @@ interval = float(input(Style.NORMAL + "Time between price checks " + Style.DIM +
 duration = int(60 * float(input(Style.NORMAL + "Time until the computer stops monitoring " + Style.DIM + "(minutes)" + Style.NORMAL + ": " + Style.BRIGHT))) # Duration of computer service (multiplied to convert to seconds)
 
 # TEMP: Here is where to ask for which broker! Use this given variable when making decisions about e.g. the log-in process
-account_username = input(Style.NORMAL + "CommSec User ID: " + Style.BRIGHT).lower() # The user's CommSec account ID
-account_password = getpass(Style.NORMAL + "CommSec User password: " + Style.BRIGHT).lower() # The user's password, required to place trades
+account_username = input(Style.NORMAL + "CommSec User ID: " + Style.BRIGHT) # The user's CommSec account ID
+account_password = getpass(Style.NORMAL + "CommSec User password: " + Style.BRIGHT) # The user's password, required to place trades
 
 trade_type = "trailing sell" #TEMP: input(Style.NORMAL + "Trade type " + Style.DIM + "(leave blank for 'trailing sell')" + Style.NORMAL + ": " + Style.BRIGHT) # Type of trade to execute
 #volume = int(input(Style.NORMAL + "Stocks to trade " + Style.DIM + "(INTEGERS ONLY)" + Style.NORMAL + ": " + Style.BRIGHT)) # Number of stocks to buy/sell
@@ -193,7 +193,7 @@ if trade_type == "trailing sell" or trade_type == "": # If trade type not specif
     try:
             
         # Extract the stop price
-        submitted_stop = float(get_trade_info("TEMP stop price ID"))
+        submitted_stop = float(get_trade_info("stopPrice-uniqName_25_0"))
 
     except NoSuchElementException:
 
@@ -203,12 +203,15 @@ if trade_type == "trailing sell" or trade_type == "": # If trade type not specif
         
         log_in() # Log in, duh
         
-        submitted_stop = float(get_trade_info("TEMP stop price ID")) # Try getting the stop price again
+        submitted_stop = float(get_trade_info("stopPrice-uniqName_25_0")) # Try getting the stop price again
 
     except InvalidArgumentException:
 
         print(Fore.LIGHTRED_EX + Style.BRIGHT + "Error: The given trade URL does not exist." + Style.RESET_ALL) # Print the exception message to the console
-        
+    
+
+    print(Style.RESET_ALL) # Reset style after round of inputs
+
 
     # Start the current stop at the actual real submitted stop
     current_stop = submitted_stop
