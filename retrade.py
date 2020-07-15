@@ -10,6 +10,7 @@ print("\n" + "Retrade v" + VERSION + ", (C) Jules Carboni 2020." + "\n") # Print
 # Import dependencies
 from datetime import datetime
 from datetime import timedelta
+import time # To compare times of day (open and close hours)
 from pytz import timezone # For converting times to/from EST
 from time import sleep # To sleep the program
 from colorama import Fore, Back, Style # For coloured text in the terminal
@@ -23,8 +24,8 @@ from yahoo_fin import stock_info # Import stock_info module from yahoo_fin, this
 TIMEZONE = timezone('US/Eastern')
 DATE_TIME_FORMAT = "%Y-%m-%d %H:%M:%S %Z%z"
 
-MARKET_OPEN_TIME = 00000 # TEMP
-MARKET_CLOSE_TIME = 00000 # TEMP
+MARKET_OPEN_TIME = datetime.time(9, 30, tzinfo=TIMEZONE)
+MARKET_CLOSE_TIME = datetime.time(16, 00, tzinfo=TIMEZONE)
 
 STOP_WARNING_PROP = 5.0 / 100 # Percentage. If the SS is not within this range of the CS, it will be highlighted as a warning
 
@@ -77,7 +78,7 @@ trade_type = input("Trade type (leave blank for 'trailing sell'): ") # Type of t
 volume = int(input("Stocks to trade (INTEGERS ONLY): ")) # Number of stocks to buy/sell
 
 # Calculate the finishing time for the service
-finish_time = datetime.now(TIMEZONE) + timedelta(seconds=duration)
+finish_datetime = datetime.now(TIMEZONE) + timedelta(seconds=duration)
 
 
 # Branch out into different trade methods
@@ -103,8 +104,11 @@ if trade_type == "trailing sell" or trade_type == "": # If trade type not specif
 
     iteration = 0 # Counter for number of passes
 
-    # Loop until duration reached (or forever if no duration specified)
-    while datetime.now(TIMEZONE) < finish_time or duration == 0:
+
+    now = datetime.now(TIMEZONE) # Literally just the current time, a disposable value
+
+    # While the markets are open (daytime in a weekday), loop until the duration is reached (or forever if no duration specified)
+    while (now < finish_datetime and (0 <= now.weekday() <= 4 and MARKET_OPEN_TIME <= now.time() <= MARKET_CLOSE_TIME)) or duration == 0:
 
 
         iteration += 1
