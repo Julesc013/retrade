@@ -84,7 +84,7 @@ ticker = input(Style.NORMAL + "Ticker to monitor: " + Style.BRIGHT).lower() # Th
 interval = float(input(Style.NORMAL + "Time between price checks " + Style.DIM + "(seconds)" + Style.NORMAL + ": " + Style.BRIGHT)) # Number of seconds between each request
 duration = int(60 * float(input(Style.NORMAL + "Time until the computer stops monitoring " + Style.DIM + "(minutes)" + Style.NORMAL + ": " + Style.BRIGHT))) # Duration of computer service (multiplied to convert to seconds)
 
-trade_type = "" #TEMP: input(Style.NORMAL + "Trade type " + Style.DIM + "(leave blank for 'trailing sell')" + Style.NORMAL + ": " + Style.BRIGHT) # Type of trade to execute
+trade_type = "trailing sell" #TEMP: input(Style.NORMAL + "Trade type " + Style.DIM + "(leave blank for 'trailing sell')" + Style.NORMAL + ": " + Style.BRIGHT) # Type of trade to execute
 volume = 1 #TEMP: int(input(Style.NORMAL + "Stocks to trade " + Style.DIM + "(INTEGERS ONLY)" + Style.NORMAL + ": " + Style.BRIGHT)) # Number of stocks to buy/sell
 
 Style.RESET_ALL # Reset style after round of inputs
