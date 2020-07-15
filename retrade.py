@@ -100,7 +100,7 @@ if trade_type == "trailing sell" or trade_type == "": # If trade type not specif
 
     # Get trade type specific information
     trail_size = float(input(Style.NORMAL + "Trail value " + Style.DIM + "(dollars below highest market value to sell at)" + Style.NORMAL + ": " + Style.BRIGHT)) # Get the size/value of the trail
-    update_zone_prop = float(input(Style.NORMAL + "Update zone size " + Style.DIM + "(percentage) (lower percentage, higher risk)" + Style.NORMAL + ": " + Style.BRIGHT)) / 100 # Area between the max price and stop price. If live price falls within this lower region, the remote stop price is updated
+    update_zone_prop = float(input(Style.NORMAL + "Update zone size " + Style.DIM + "(lower percentage means higher risk) (recommended: 80)" + Style.NORMAL + ": " + Style.BRIGHT)) / 100 # Area between the max price and stop price. If live price falls within this lower region, the remote stop price is updated
     #current_stop = float(input("Current stop price: "))
     trade_url = input(Style.NORMAL + "URL of trade page " + Style.DIM + "(MUST ALREADY HAVE STOP LOSS SET UP)" + Style.NORMAL + ": " + Style.BRIGHT) # The URL to the stop-loss that has already been set up.
 
