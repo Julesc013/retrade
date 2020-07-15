@@ -112,7 +112,25 @@ def log_in():
 
     except NoSuchElementException:
 
-        print("GOTCHA")
+        # If this error occurs, probably already logged in, so just pass and go ahead and launch the international trading page.
+        pass
+    
+    # Launch the international trading platform
+    web_driver.get(INTERNATIONAL_LOGIN_URL)
+
+    # All done!
+
+
+
+def get_trade_info(get_info):
+
+    # Get information from the trade page.
+
+    if get_info == "stop price":
+
+        web_driver.get(trade_url) # Load the page
+
+        #TEMP EXTRACT THE INFO and RETURN STOP PRICE!!
 
 
 
@@ -174,21 +192,25 @@ if trade_type == "trailing sell" or trade_type == "": # If trade type not specif
 
     try:
             
-        web_driver.get(trade_url) # Load the page
-
         # Extract the stop price
+        submitted_stop = get_trade_info("stop price")
+
+    except NoSuchElementException:
+
+        # If this error occurs, probably not logged in, so call the log in function.
+
+        print(Fore.YELLOW + "Now logging into CommSec account." + Fore.RESET) # Print the exception message to the console
+        
+        log_in() # Log in, duh
+        
+        submitted_stop = get_trade_info("stop price") # Try getting the stop price again
 
     except InvalidArgumentException:
 
         print(Fore.LIGHTRED_EX + "Error: The given trade URL does not exist." + Fore.RESET) # Print the exception message to the console
         
-    except ConnectionError:
 
-        print(Fore.YELLOW + "Now logging into CommSec account." + Fore.RESET) # Print the exception message to the console
-        
-        #TEMP DO GETTING STUFF
-
-    submitted_stop = 000000 # TEMP
+    # Start the current stop at the actual real submitted stop
     current_stop = submitted_stop
 
 
