@@ -4,7 +4,7 @@
 
 
 VERSION = "0.3.0"
-print("\n" + "Retrade v" + VERSION + ", (C) Jules Carboni 2020." + "\n") # Print copyright and version information at start
+
 
 
 # Import dependencies
@@ -16,6 +16,13 @@ from time import sleep # To sleep the program
 from colorama import Fore, Back, Style # For coloured text in the terminal
 from yahoo_fin import stock_info # Import stock_info module from yahoo_fin, this is what gets the latest price
 
+
+
+# Print copyright and version information at start
+
+LOGO_PRINT = Fore.LIGHTRED_EX + "R" + Fore.LIGHTYELLOW_EX + "e" + Fore.LIGHTGREEN_EX + "t" + Fore.LIGHTCYAN_EX + "r" + Fore.LIGHTBLUE_EX + "a" + Fore.LIGHTMAGENTA_EX + "d" + Fore.LIGHTRED_EX + "e" + Fore.RESET
+VERSION_PRINT = Fore.LIGHTBLACK_EX + "v" + VERSION + Fore.RESET
+print("\n" + Style.BRIGHT + LOGO_PRINT + " " + VERSION_PRINT+ "\n" + "(C) Jules Carboni 2020" + Style.RESET_ALL + "\n")
 
 
 
@@ -71,11 +78,17 @@ def print_info(ticker, live_price, live_time, iteration, current_stop, submitted
 
 
 # Get data from user
-ticker = input("Ticker to monitor: ").lower() # The stock to monitor
-interval = float(input("Time between price checks (seconds): ")) # Number of seconds between each request
-duration = int(60 * float(input("Time until the computer stops monitoring (minutes): "))) # Duration of computer service (multiplied to convert to seconds)
-trade_type = input("Trade type (leave blank for 'trailing sell'): ") # Type of trade to execute
-volume = int(input("Stocks to trade (INTEGERS ONLY): ")) # Number of stocks to buy/sell
+
+ticker = input(Style.NORMAL + "Ticker to monitor: " + Style.BRIGHT).lower() # The stock to monitor
+
+interval = float(input(Style.NORMAL + "Time between price checks " + Style.DIM + "(seconds)" + Style.NORMAL + ": " + Style.BRIGHT)) # Number of seconds between each request
+duration = int(60 * float(input(Style.NORMAL + "Time until the computer stops monitoring " + Style.DIM + "(minutes)" + Style.NORMAL + ": " + Style.BRIGHT))) # Duration of computer service (multiplied to convert to seconds)
+
+trade_type = "" #TEMP: input(Style.NORMAL + "Trade type " + Style.DIM + "(leave blank for 'trailing sell')" + Style.NORMAL + ": " + Style.BRIGHT) # Type of trade to execute
+volume = 1 #TEMP: int(input(Style.NORMAL + "Stocks to trade " + Style.DIM + "(INTEGERS ONLY)" + Style.NORMAL + ": " + Style.BRIGHT)) # Number of stocks to buy/sell
+
+Style.RESET_ALL # Reset style after round of inputs
+
 
 # Calculate the finishing time for the service
 finish_datetime = datetime.now(TIMEZONE) + timedelta(seconds=duration)
@@ -86,10 +99,12 @@ finish_datetime = datetime.now(TIMEZONE) + timedelta(seconds=duration)
 if trade_type == "trailing sell" or trade_type == "": # If trade type not specified, assume trailing sell
 
     # Get trade type specific information
-    trail_size = float(input("Trail value (dollars below highest market value to sell at): ")) # Get the size/value of the trail
-    update_zone_prop = float(input("Update zone size (percentage) (lower percentage, higher risk): ")) / 100 # Area between the max price and stop price. If live price falls within this lower region, the remote stop price is updated
+    trail_size = float(input(Style.NORMAL + "Trail value " + Style.DIM + "(dollars below highest market value to sell at)" + Style.NORMAL + ": " + Style.BRIGHT)) # Get the size/value of the trail
+    update_zone_prop = float(input(Style.NORMAL + "Update zone size " + Style.DIM + "(percentage) (lower percentage, higher risk)" + Style.NORMAL + ": " + Style.BRIGHT)) / 100 # Area between the max price and stop price. If live price falls within this lower region, the remote stop price is updated
     #current_stop = float(input("Current stop price: "))
-    trade_url = input("URL of trade page (MUST ALREADY HAVE STOP LOSS SET UP): ") # The URL to the stop-loss that has already been set up.
+    trade_url = input(Style.NORMAL + "URL of trade page " + Style.DIM + "(MUST ALREADY HAVE STOP LOSS SET UP)" + Style.NORMAL + ": " + Style.BRIGHT) # The URL to the stop-loss that has already been set up.
+
+    Style.RESET_ALL # Reset style after round of inputs
 
 
     # Get current/submitted stop price
