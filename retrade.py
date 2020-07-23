@@ -108,7 +108,7 @@ def log_in():
         username_element.send_keys(account_username)
         password_element.send_keys(account_password)
 
-        web_driver.find_element_by_name("ctl00_cpContent_btnLogin").click() # Click the login button
+        web_driver.find_element_by_id("ctl00_cpContent_btnLogin").click() # Click the login button
 
     except NoSuchElementException:
 
@@ -139,9 +139,23 @@ def update_trade_info(element_id, info_value):
 
     web_driver.get(trade_url) # Load the page
 
-    return input(Style.NORMAL + "Currently set stop price " + Style.DIM + "(dollars)" + Style.NORMAL + ": " + Style.BRIGHT) # TEMP, until I get retrieval code working this will do
-    
-    #TEMP EXTRACT THE INFO and RETURN STOP PRICE!!
+
+    # Overwrite the specified trade field
+
+    # Locate the elements
+    field_element = web_driver.find_element_by_id(element_id)
+
+    # Populate the elements
+    field_element.send_keys(info_value)
+
+
+    # Submit changes to trade form
+
+    web_driver.find_element_by_class_name("span3 button review btn").click() # Click the login button
+
+    sleep(1) # Wait one second (for the web form to load in case its lagging)
+
+    web_driver.find_element_by_class_name("btn submit").click() # Click the login button
 
 
 
