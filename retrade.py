@@ -133,6 +133,16 @@ def get_trade_info(element_id):
     #TEMP EXTRACT THE INFO and RETURN STOP PRICE!!
 
 
+def update_trade_info(element_id, info_value):
+
+    # Overwrite information in the trade page.
+
+    web_driver.get(trade_url) # Load the page
+
+    return input(Style.NORMAL + "Currently set stop price " + Style.DIM + "(dollars)" + Style.NORMAL + ": " + Style.BRIGHT) # TEMP, until I get retrieval code working this will do
+    
+    #TEMP EXTRACT THE INFO and RETURN STOP PRICE!!
+
 
 
 
@@ -199,11 +209,12 @@ if trade_type == "trailing sell" or trade_type == "": # If trade type not specif
 
         # If this error occurs, probably not logged in, so call the log in function.
 
-        print(Fore.YELLOW + Style.BRIGHT + "Logging into CommSec account now." + Style.RESET_ALL) # Print the exception message to the console
-        
+        print(Fore.YELLOW + Style.BRIGHT + "Logging into CommSec account..." + Style.RESET_ALL, end="") # Print the exception message to the console
         log_in() # Log in, duh
+        print(Fore.GREEN + Style.BRIGHT + " Done." + Style.RESET_ALL) # Print the exception message to the console
         
         submitted_stop = float(get_trade_info("stopPrice-uniqName_25_0")) # Try getting the stop price again
+
 
     except InvalidArgumentException:
 
@@ -254,6 +265,7 @@ if trade_type == "trailing sell" or trade_type == "": # If trade type not specif
             # If the markets are open, proceed with execution
 
 
+
         iteration += 1
         
         try: # Attempt a web request
@@ -282,9 +294,32 @@ if trade_type == "trailing sell" or trade_type == "": # If trade type not specif
         # If the current stop is higher than the submitted stop, and the live price has fallen into the update zone, update the submitted stop
         if current_stop > submitted_stop and live_price <= update_stop:
 
-            # TEMP Update the trade!
 
-            submitted_stop = current_stop
+            # Update the stop loss trade!
+
+            try:
+                    
+                # Update the trade with the new stop price
+                update_trade_info("stopPrice-uniqName_25_0", current_stop)
+
+            except NoSuchElementException:
+
+                # If this error occurs, probably not logged in, so call the log in function.
+
+                print(Fore.YELLOW + Style.BRIGHT + "Updating stop price to $" + format(current_stop, '.2f') + "..." + Style.RESET_ALL, end="") # Print the exception message to the console
+                log_in() # Log in, duh
+                print(Fore.GREEN + Style.BRIGHT + " Done." + Style.RESET_ALL) # Print the exception message to the console
+                
+                update_trade_info("stopPrice-uniqName_25_0", current_stop) # Try updating the stop price again
+
+
+            except InvalidArgumentException:
+
+                print(Fore.LIGHTRED_EX + Style.BRIGHT + "Error: The given trade URL does not exist." + Style.RESET_ALL) # Print the exception message to the console
+    
+
+
+            submitted_stop = current_stop # Update local values
 
         
         print_info(ticker, live_price, live_time, iteration, current_stop, submitted_stop, last_price) # Display live price and information TEMP
@@ -301,6 +336,7 @@ else:
 
 
 # Safely quit the Selenium web driver
+web_driver.close
 web_driver.quit
 
-print(Fore.GREEN + "Specified duration ended. You can safely quit this program." + Fore.RESET) # Show that everything closed safely (and that you didn't just crash).
+print(Fore.GREEN + "Specified duration ended. You can safely quit this program." + Fore.RESET + "\n") # Show that everything closed safely (and that you didn't just crash).
